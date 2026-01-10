@@ -6,21 +6,18 @@ exports.getUserStats = async (req, res) => {
         const userId = req.user.id || req.user.ID_User; 
         const userRole = req.user.role;
 
-        // ==========================================
-        // LOGIKA UNTUK ADMIN (Melihat Seluruh Sistem)
-        // ==========================================
         if (userRole === 'admin') {
             const [totalProducts, totalUsers, totalApiKeys, recentActivities] = await Promise.all([
                 Product.count(),
                 User.count({ where: { role: 'user' } }),
                 ApiKey.count(),
                 ApiLog.findAll({
-                    limit: 15, // Admin dapat list lebih panjang
+                    limit: 15, 
                     order: [['created_at', 'DESC']],
                     include: [{ 
                         model: User, 
                         as: 'user', 
-                        attributes: ['nama', 'email'] // Admin bisa lihat nama pelakunya
+                        attributes: ['nama', 'email']
                     }]
                 })
             ]);
@@ -32,14 +29,11 @@ exports.getUserStats = async (req, res) => {
                     totalProducts,
                     totalUsers,
                     totalApiKeys,
-                    recentLogs: recentActivities // Data log dari semua user
+                    recentLogs: recentActivities 
                 }
             });
         }
 
-        // ==========================================
-        // LOGIKA UNTUK USER (Hanya Milik Sendiri)
-        // ==========================================
         const [totalRequests, recentLogs, apiKeyRecord] = await Promise.all([
             ApiLog.count({ where: { ID_User: userId } }),
             ApiLog.findAll({

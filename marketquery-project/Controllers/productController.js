@@ -1,18 +1,14 @@
 const { Product } = require('../models');
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
-const fs = require('fs');   // PENTING: Untuk hapus file
-const path = require('path'); // PENTING: Untuk path file
+const fs = require('fs');   
+const path = require('path'); 
 
-/* ============================================================
-   1. GET ALL PRODUCTS (Dashboard & API External)
-   ============================================================ */
 exports.getAllProducts = async (req, res) => {
   try {
     const { search, sortBy = 'nama_barang', order = 'ASC' } = req.query;
     let whereClause = {};
 
-    // Fitur Pencarian
     if (search) {
       whereClause[Op.or] = [
         { nama_barang: { [Op.like]: `%${search}%` } },
@@ -20,7 +16,7 @@ exports.getAllProducts = async (req, res) => {
       ];
     }
 
-    // Validasi Kolom Sorting
+
     const validSortColumns = ['nama_barang', 'harga', 'stok', 'kategori'];
     const actualSortBy = validSortColumns.includes(sortBy) ? sortBy : 'nama_barang';
 
@@ -29,7 +25,6 @@ exports.getAllProducts = async (req, res) => {
       order: [[actualSortBy, order]]
     });
 
-    // MATIKAN CACHE
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
@@ -50,9 +45,6 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-/* ============================================================
-   2. GET PRODUCT BY ID
-   ============================================================ */
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -80,9 +72,6 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-/* ============================================================
-   3. CREATE PRODUCT (Admin Only)
-   ============================================================ */
 exports.createProduct = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -91,10 +80,7 @@ exports.createProduct = async (req, res) => {
     }
 
     const { nama_barang, harga, kategori, deskripsi, stok } = req.body;
-    
-    // Ambil nama file dari Multer
     const gambar = req.file ? req.file.filename : null; 
-    
     const product = await Product.create({ 
       nama_barang, 
       harga, 
@@ -120,13 +106,9 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-/* ============================================================
-   4. UPDATE PRODUCT (Admin Only) - LOGIC FIX GAMBAR
-   ============================================================ */
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    // Ambil field delete_image juga
     const { nama_barang, harga, kategori, deskripsi, stok, delete_image } = req.body;
 
     const product = await Product.findByPk(id);
@@ -134,29 +116,23 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Produk tidak ditemukan' });
     }
 
-    // --- LOGIKA UPDATE GAMBAR ---
-    let gambarData = product.gambar; // Default: pakai gambar lama
+    let gambarData = product.gambar;
 
-    // KASUS 1: Ada file baru diupload
     if (req.file) {
-      // Hapus gambar lama fisik jika ada
       if (product.gambar) {
         const oldPath = path.join(__dirname, '../uploads', product.gambar);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
       gambarData = req.file.filename;
     } 
-    // KASUS 2: User klik hapus gambar (request delete_image = 'true')
     else if (delete_image === 'true') {
-      // Hapus gambar lama fisik jika ada
       if (product.gambar) {
         const oldPath = path.join(__dirname, '../uploads', product.gambar);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-      gambarData = null; // Set database jadi null
+      gambarData = null;
     }
 
-    // Update DB
     await product.update({ 
       nama_barang, 
       harga, 
@@ -182,9 +158,6 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-/* ============================================================
-   5. DELETE PRODUCT (Admin Only)
-   ============================================================ */
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -194,7 +167,6 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Produk tidak ditemukan' });
     }
 
-    // Hapus file fisik gambar jika ada sebelum hapus data di DB
     if (product.gambar) {
       const filePath = path.join(__dirname, '../uploads', product.gambar);
       if (fs.existsSync(filePath)) {

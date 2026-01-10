@@ -1,8 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-/* =========================
-   AUTHENTICATE TOKEN (JWT)
-========================= */
 exports.authenticateToken = (req, res, next) => {
   try {
     const authHeader =
@@ -18,7 +15,6 @@ exports.authenticateToken = (req, res, next) => {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    // payload = { ID_User, role, iat, exp }
     req.user = payload;
 
     next();
@@ -30,9 +26,6 @@ exports.authenticateToken = (req, res, next) => {
   }
 };
 
-/* =========================
-   ADMIN ONLY
-========================= */
 exports.isAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();

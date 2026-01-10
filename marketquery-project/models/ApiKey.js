@@ -4,7 +4,6 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ApiKey extends Model {
     static associate(models) {
-      // Menghubungkan ApiKey kembali ke User
       ApiKey.belongsTo(models.User, { foreignKey: 'ID_User', as: 'user' });
     }
   }
@@ -20,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
-    Key: { // Harus 'Key' dengan huruf K besar sesuai script SQL kamu
+    Key: { 
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
@@ -32,8 +31,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ApiKey',
-    tableName: 'ApiKey', // Nama tabel di MySQL
-    timestamps: true     // Karena di SQL kamu ada createdAt/updatedAt
+    tableName: 'ApiKey', 
+    timestamps: true    
   });
 
   return ApiKey;

@@ -2,52 +2,34 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs'); // TAMBAHAN: Untuk cek folder
+const fs = require('fs'); 
 const { sequelize } = require('./models');
 
-// Import routes
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-
 const app = express();
 
-// ==========================================
-// CONFIGURATION
-// ==========================================
 app.set('etag', false);
 const PORT = process.env.PORT || 3009;
 
-// ----------------------
-// 1. MIDDLEWARE GLOBAL
-// ----------------------
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ----------------------
-// 2. LOGGING
-// ----------------------
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
-// ----------------------
-// 3. STATIC FILES (AUTO CREATE FOLDER)
-// ----------------------
-// Cek apakah folder 'uploads' ada, jika tidak, buat otomatis
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir);
     console.log('📁 Folder uploads tidak ditemukan, berhasil dibuat otomatis!');
 }
 
-// Buka akses folder uploads ke publik
 app.use('/uploads', express.static(uploadDir));
 
-// ----------------------
-// 4. REGISTER ROUTES
-// ----------------------
+
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -62,9 +44,6 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);       
 app.use('/api/products', productRoutes); 
 
-// ----------------------
-// 5. ERROR HANDLING
-// ----------------------
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
 });
@@ -78,9 +57,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ----------------------
-// 6. START SERVER
-// ----------------------
 const startServer = async () => {
   try {
     await sequelize.authenticate();

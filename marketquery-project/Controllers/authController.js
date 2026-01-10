@@ -1,14 +1,11 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User, ApiKey } = require('../models'); // Sesuaikan path jika perlu
+const { User, ApiKey } = require('../models'); 
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 
-/* =========================
-   REGISTER USER / ADMIN
-   (ADMIN SEHARUSNYA VIA BACKEND / SQL)
-========================= */
+
 exports.register = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -39,7 +36,6 @@ exports.register = async (req, res) => {
       role: newUser.role
     };
 
-    // API KEY HANYA UNTUK USER
     if (newUser.role === 'user') {
       const apiKey = process.env.API_KEY_PREFIX + crypto.randomBytes(16).toString('hex');
 
@@ -67,9 +63,6 @@ exports.register = async (req, res) => {
   }
 };
 
-/* =========================
-   LOGIN USER / ADMIN
-========================= */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -88,15 +81,12 @@ exports.login = async (req, res) => {
       role: user.role
     };
 
-    // USER → AMBIL API KEY TERBARU / AUTO CREATE
     if (user.role === 'user') {
-      // PERBAIKAN: Menggunakan order by updatedAt DESC sesuai request
       let keyRecord = await ApiKey.findOne({
         where: { ID_User: user.ID_User },
         order: [['updatedAt', 'DESC']] 
       });
 
-      // Jika belum ada sama sekali, buat baru
       if (!keyRecord) {
         keyRecord = await ApiKey.create({
           ID_User: user.ID_User,
@@ -123,9 +113,7 @@ exports.login = async (req, res) => {
   }
 };
 
-/* =========================
-   GET PROFILE
-========================= */
+
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.ID_User, {
@@ -138,8 +126,6 @@ exports.getProfile = async (req, res) => {
         .json({ success: false, message: 'User tidak ditemukan' });
     }
 
-    // AMBIL API KEY (JIKA ADA & ROLE USER)
-    // Kita ambil yang terbaru juga untuk konsistensi
     const keyRecord =
       user.role === 'user'
         ? await ApiKey.findOne({ 
@@ -163,9 +149,6 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE PROFILE
-========================= */
 exports.updateProfile = async (req, res) => {
   try {
     const { nama, email } = req.body;
@@ -191,9 +174,6 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-/* =========================
-   CHANGE PASSWORD
-========================= */
 exports.changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -224,12 +204,9 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-/* =========================
-   RESET API KEY (USER ONLY)
-========================= */
 exports.resetApiKey = async (req, res) => {
   try {
-    const userId = req.user.ID_User; // Ambil dari token langsung lebih aman
+    const userId = req.user.ID_User; 
     const user = await User.findByPk(userId);
 
     if (!user || user.role !== 'user') {
@@ -241,14 +218,11 @@ exports.resetApiKey = async (req, res) => {
 
     const newApiKey = process.env.API_KEY_PREFIX + crypto.randomBytes(16).toString('hex');
 
-    // PERBAIKAN: Menggunakan Update Check dulu baru Create (sesuai request)
-    // Ini memastikan kita menimpa data lama jika ada, atau buat baru jika tidak ada
     const [updated] = await ApiKey.update(
       { Key: newApiKey },
       { where: { ID_User: userId } }
     );
 
-    // Jika record belum ada di tabel ApiKey (updated === 0), kita create
     if (updated === 0) {
       await ApiKey.create({
         ID_User: userId,
@@ -266,9 +240,6 @@ exports.resetApiKey = async (req, res) => {
   }
 };
 
-/* =========================
-   ADMIN: GET ALL USERS
-========================= */
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -277,13 +248,11 @@ exports.getAllUsers = async (req, res) => {
       order: [['ID_User', 'DESC']]
     });
 
-    // Ambil API Key untuk setiap user
     const usersWithKeys = await Promise.all(
       users.map(async (user) => {
         const userObj = user.toJSON();
         
         if (user.role === 'user') {
-          // Ambil key terbaru juga di sini
           const keyRecord = await ApiKey.findOne({
             where: { ID_User: user.ID_User },
             order: [['updatedAt', 'DESC']]
@@ -310,14 +279,9 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-/* =========================
-   ADMIN: DELETE USER
-========================= */
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Cegah admin menghapus diri sendiri
     if (req.user.ID_User === parseInt(id)) {
       return res.status(400).json({
         success: false,
@@ -333,19 +297,13 @@ exports.deleteUser = async (req, res) => {
         message: 'User tidak ditemukan'
       });
     }
-
-    // Cegah menghapus admin lain (Opsional, tergantung kebijakan)
     if (user.role === 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Tidak dapat menghapus user dengan role admin'
       });
     }
-
-    // Hapus API Key jika ada
     await ApiKey.destroy({ where: { ID_User: id } });
-
-    // Hapus user
     await user.destroy();
 
     res.json({

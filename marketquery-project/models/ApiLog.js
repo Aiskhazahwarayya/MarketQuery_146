@@ -39,8 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'ApiLog',
     tableName: 'ApiLogs',
-    // --- TAMBAHKAN INI ---
-    timestamps: false, // Mematikan pencarian otomatis createdAt & updatedAt
+    timestamps: false, 
   });
 
   return ApiLog;
