@@ -233,24 +233,25 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
                 />
               </div>
             </div>
-            <div>
+              <div>
               <div className="relative">
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-300 z-10 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 hover:border-purple-500/50 rounded-xl pl-12 pr-10 py-3 text-white font-semibold outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none cursor-pointer shadow-lg"
+                  className="w-full backdrop-blur-xl border border-pink-400/30 hover:border-pink-300/50 rounded-xl pl-11 pr-9 py-2.5 text-white text-sm font-semibold outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 transition-all appearance-none cursor-pointer shadow-lg"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a78bfa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 0.75rem center',
-                    backgroundSize: '1.5rem'
+                    background: 'linear-gradient(135deg, rgba(219, 39, 119, 0.4) 0%, rgba(147, 51, 234, 0.35) 50%, rgba(168, 85, 247, 0.3) 100%)',
+                    backgroundImage: `linear-gradient(135deg, rgba(219, 39, 119, 0.4) 0%, rgba(147, 51, 234, 0.35) 50%, rgba(168, 85, 247, 0.3) 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f9a8d4'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat, no-repeat',
+                    backgroundPosition: '0 0, right 0.5rem center',
+                    backgroundSize: '100%, 1rem'
                   }}
                 >
                   {categories.map(cat => (
-                    <option key={cat} value={cat} className="bg-slate-800 text-white py-2 font-semibold">{cat}</option>
+                    <option key={cat} value={cat} className="bg-purple-950 text-white py-3 font-semibold px-4">{cat}</option>
                   ))}
                 </select>
               </div>

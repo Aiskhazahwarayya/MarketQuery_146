@@ -5,6 +5,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -14,6 +15,9 @@ const Navbar = () => {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
     }
+
+    // Set current path
+    setCurrentPath(window.location.pathname);
   }, []);
 
   const handleLogout = () => {
@@ -24,6 +28,10 @@ const Navbar = () => {
   const navigateTo = (path) => {
     window.location.href = path;
     setMobileMenuOpen(false);
+  };
+
+  const isActive = (path) => {
+    return currentPath === path;
   };
 
   if (!token || !user) {
@@ -114,6 +122,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl px-6 py-4 shadow-2xl">
           <div className="flex justify-between items-center">
             
+            {/* Logo */}
             <motion.button
               onClick={() => navigateTo('/')}
               whileHover={{ scale: 1.05 }}
@@ -130,46 +139,55 @@ const Navbar = () => {
                   MarketQuery
                 </div>
                 <div className="text-[10px] text-gray-500 -mt-1">
-                  {user.role === 'admin' ? 'Admin Panel' : 'API Platform'}
+                  API Platform
                 </div>
               </div>
             </motion.button>
 
+            {/* Desktop Menu Items with Active State */}
             <div className="hidden lg:flex items-center gap-2">
-              {menuItems.map((item, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => navigateTo(item.path)}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-2"
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </motion.button>
-              ))}
+              {menuItems.map((item, index) => {
+                const active = isActive(item.path);
+                return (
+                  <motion.button
+                    key={index}
+                    onClick={() => navigateTo(item.path)}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                      active 
+                        ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30' 
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </motion.button>
+                );
+              })}
             </div>
 
+            {/* Right Side - User Info & Logout */}
             <div className="flex items-center gap-3">
+              {/* User Info - SIMPLIFIED (No Role Label) */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 className="hidden md:flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10"
               >
                 <div className="flex items-center gap-2">
+                  {/* Status Indicator */}
                   <div className={`w-2 h-2 rounded-full ${
                     user.role === 'admin' ? 'bg-yellow-400' : 'bg-green-400'
                   } animate-pulse`} />
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider">
-                      {user.role}
-                    </div>
-                    <div className="text-sm font-bold text-white -mt-0.5">
-                      {user.nama || user.email}
-                    </div>
+                  
+                  {/* Just Name - NO Role Label */}
+                  <div className="text-sm font-bold text-white">
+                    {user.nama || user.email}
                   </div>
                 </div>
               </motion.div>
 
+              {/* Logout Button */}
               <motion.button
                 onClick={handleLogout}
                 whileHover={{ scale: 1.05 }}
@@ -182,6 +200,7 @@ const Navbar = () => {
                 Logout
               </motion.button>
 
+              {/* Mobile Menu Toggle */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -200,9 +219,11 @@ const Navbar = () => {
         </div>
       </motion.nav>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -211,6 +232,7 @@ const Navbar = () => {
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
             />
 
+            {/* Slide-out Menu */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -220,6 +242,7 @@ const Navbar = () => {
             >
               <div className="p-6">
                 
+                {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                   <div className="text-xl font-black bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
                     Menu
@@ -234,36 +257,41 @@ const Navbar = () => {
                   </button>
                 </div>
 
+                {/* User Info - SIMPLIFIED */}
                 <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${
                       user.role === 'admin' ? 'bg-yellow-400' : 'bg-green-400'
                     } animate-pulse`} />
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider">
-                        {user.role}
-                      </div>
-                      <div className="text-sm font-bold text-white">
-                        {user.nama || user.email}
-                      </div>
+                    <div className="text-sm font-bold text-white">
+                      {user.nama || user.email}
                     </div>
                   </div>
                 </div>
 
+                {/* Menu Items with Active State */}
                 <div className="space-y-2 mb-6">
-                  {menuItems.map((item, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => navigateTo(item.path)}
-                      whileTap={{ scale: 0.95 }}
-                      className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 flex items-center gap-3"
-                    >
-                      {item.icon}
-                      <span>{item.name}</span>
-                    </motion.button>
-                  ))}
+                  {menuItems.map((item, index) => {
+                    const active = isActive(item.path);
+                    return (
+                      <motion.button
+                        key={index}
+                        onClick={() => navigateTo(item.path)}
+                        whileTap={{ scale: 0.95 }}
+                        className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-3 ${
+                          active
+                            ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30'
+                            : 'text-gray-300 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {item.icon}
+                        <span>{item.name}</span>
+                      </motion.button>
+                    );
+                  })}
                 </div>
 
+                {/* Logout Button */}
                 <motion.button
                   onClick={handleLogout}
                   whileTap={{ scale: 0.95 }}
