@@ -8,6 +8,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // --- FUNGSI VALIDASI ---
+  // Memastikan input tidak kosong dan format email valid sebelum dikirim
   const validate = () => {
     let errors = {};
     if (!formData.email.trim()) {
@@ -22,13 +24,16 @@ const LoginPage = () => {
     return Object.keys(errors).length === 0;
   };
 
+   // --- FUNGSI UTAMA LOGIN ---
   const handleLogin = async () => {
+    // 1. Jalankan validasi lokal
     if (!validate()) return;
 
     setLoading(true);
     setError('');
 
     try {
+      // 2. Kirim request login ke backend
       const response = await fetch('http://localhost:3009/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,12 +42,15 @@ const LoginPage = () => {
 
       const data = await response.json();
 
+      // 3. Cek apakah login sukses
       if (data.success && data.data) {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
         const userRole = data.data.user.role;
         
+        // 4. LOGIKA REDIRECT BERDASARKAN ROLE
+        // Admin diarahkan ke Dashboard, User Biasa ke halaman API Key
         if (userRole === 'admin') {
           console.log('✅ Login sebagai Admin - Redirect ke /dashboard');
           window.location.href = '/dashboard';
@@ -53,9 +61,11 @@ const LoginPage = () => {
           setError('Role tidak dikenali. Hubungi administrator.');
         }
       } else {
+        // Jika password salah atau user tidak ditemukan
         setError(data.message || 'Login gagal. Periksa email dan password Anda.');
       }
     } catch (err) {
+       // Jika server backend mati atau tidak bisa dihubungi
       setError('Server tidak merespon. Pastikan backend di port 3009 menyala.');
       console.error('Login error:', err);
     } finally {
@@ -63,6 +73,7 @@ const LoginPage = () => {
     }
   };
 
+  // --- KONFIGURASI ANIMASI FRAMER MOTION ---
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -78,6 +89,7 @@ const LoginPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4 overflow-hidden">
+      {/* TOMBOL KEMBALI KE HOME */}
       <motion.button
         onClick={() => window.location.href = '/'}
         whileHover={{ scale: 1.1 }}
@@ -89,6 +101,7 @@ const LoginPage = () => {
         </svg>
       </motion.button>
 
+       {/* BACKGROUND ANIMATION */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
@@ -103,6 +116,7 @@ const LoginPage = () => {
       </div>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
 
+        {/* FORM CONTAINER UTAMA */}
       <motion.div
         initial="hidden"
         animate="visible"
@@ -116,6 +130,7 @@ const LoginPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-3xl" />
 
           <div className="relative z-10">
+            {/* HEADER FORM */}
             <motion.div variants={itemVariants} className="text-center mb-8">
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 360 }}
@@ -136,6 +151,7 @@ const LoginPage = () => {
               <p className="text-gray-400 text-sm">Login untuk akses MarketQuery API</p>
             </motion.div>
 
+            {/* ALERT ERROR NOTIFICATION */}
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -155,6 +171,7 @@ const LoginPage = () => {
             </AnimatePresence>
 
             <div className="space-y-5">
+              {/* INPUT EMAIL */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <label className="text-sm font-semibold text-gray-300 ml-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,6 +203,7 @@ const LoginPage = () => {
                 </AnimatePresence>
               </motion.div>
 
+               {/* INPUT PASSWORD */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <label className="text-sm font-semibold text-gray-300 ml-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,6 +221,8 @@ const LoginPage = () => {
                     } rounded-xl px-4 py-3.5 ${formData.password ? 'pr-12' : 'pr-4'} outline-none transition-all duration-300 text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/20`}
                     placeholder="••••••••"
                   />
+
+                   {/* Tombol Toggle Eye Icon */}
                   <AnimatePresence>
                     {formData.password && (
                       <motion.button
@@ -245,6 +265,7 @@ const LoginPage = () => {
                 </AnimatePresence>
               </motion.div>
 
+              {/* TOMBOL SUBMIT */}
               <motion.button
                 variants={itemVariants}
                 whileHover={{ scale: 1.02, y: -2 }}
@@ -272,6 +293,7 @@ const LoginPage = () => {
               </motion.button>
             </div>
 
+             {/* LINK KE REGISTER */}
             <motion.div variants={itemVariants} className="mt-8 pt-6 border-t border-white/10">
               <p className="text-center text-gray-400 text-sm">
                 Belum punya akun?{' '}

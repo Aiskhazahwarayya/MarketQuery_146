@@ -1,6 +1,10 @@
 const multer = require('multer');
 const path = require('path');
 
+/* ============================================================
+    KONFIGURASI PENYIMPANAN (STORAGE)
+    Menentukan ke mana file disimpan dan apa nama filenya.
+   ============================================================ */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/'); 
@@ -11,6 +15,10 @@ const storage = multer.diskStorage({
   }
 });
 
+/* ============================================================
+    PENYARING FILE (FILE FILTER)
+    Memastikan hanya file tertentu yang boleh diunggah.
+   ============================================================ */
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -21,7 +29,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, 
+  limits: { fileSize: 5 * 1024 * 1024 }, // Batasan ukuran: Maksimal 5MB
   fileFilter: fileFilter
 });
 

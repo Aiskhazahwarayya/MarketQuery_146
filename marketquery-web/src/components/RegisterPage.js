@@ -12,12 +12,17 @@ const RegisterPage = () => {
 
   const validate = () => {
     let errors = {};
+     // Cek Nama
     if (!formData.nama.trim()) errors.nama = 'Nama lengkap wajib diisi';
+     
+    // Cek Email 
     if (!formData.email.trim()) {
       errors.email = 'Email wajib diisi';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Format email tidak valid';
     }
+
+    // Cek Password 
     if (!formData.password) {
       errors.password = 'Password wajib diisi';
     } else if (formData.password.length < 6) {
@@ -27,13 +32,16 @@ const RegisterPage = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // --- FUNGSI REGISTER (API CALL) ---
   const handleSubmit = async () => {
+    // 1. Jalankan validasi
     if (!validate()) return;
 
     setLoading(true);
     setError('');
 
     try {
+      // 2. Kirim data ke backend
       const response = await fetch('http://localhost:3009/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,8 +50,10 @@ const RegisterPage = () => {
 
       const data = await response.json();
 
+      // 3. Handle Response
       if (data.success) {
-        setSuccess(true);
+        setSuccess(true); // Munculkan notifikasi sukses
+        // Redirect ke login setelah 2 detik
         setTimeout(() => {
           window.location.href = '/login';
         }, 2000);
@@ -57,6 +67,7 @@ const RegisterPage = () => {
     }
   };
 
+  // --- KONFIGURASI ANIMASI ---
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -79,6 +90,8 @@ const RegisterPage = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4 overflow-hidden">
+      
+      {/* TOMBOL HOME (POJOK KANAN ATAS) */}
       <motion.button
         onClick={() => window.location.href = '/'}
         whileHover={{ scale: 1.1 }}
@@ -90,6 +103,7 @@ const RegisterPage = () => {
         </svg>
       </motion.button>
 
+       {/* BACKGROUND ANIMASI (BLOBS) */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           animate={{
@@ -119,6 +133,7 @@ const RegisterPage = () => {
 
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
 
+       {/* CONTAINER FORM UTAMA */}
       <motion.div
         initial="hidden"
         animate="visible"
@@ -152,6 +167,7 @@ const RegisterPage = () => {
               <p className="text-gray-400 text-sm">Mulai perjalanan API Anda hari ini</p>
             </motion.div>
 
+           {/* NOTIFIKASI SUKSES */}
             <AnimatePresence>
               {success && (
                 <motion.div
@@ -180,6 +196,7 @@ const RegisterPage = () => {
               )}
             </AnimatePresence>
 
+            {/* NOTIFIKASI ERROR */}
             <AnimatePresence>
               {error && (
                 <motion.div
@@ -199,6 +216,7 @@ const RegisterPage = () => {
             </AnimatePresence>
 
             <div className="space-y-5">
+               {/* INPUT NAMA LENGKAP */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <label className="text-sm font-semibold text-gray-300 ml-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,6 +239,7 @@ const RegisterPage = () => {
                     } rounded-xl px-4 py-3.5 outline-none transition-all duration-300 text-white placeholder:text-gray-500 focus:bg-white/10 focus:ring-4 focus:ring-purple-500/20`}
                     placeholder="John Doe"
                   />
+                  {/* Animasi Border saat Focus */}
                   {focusedField === 'nama' && (
                     <motion.div
                       layoutId="focus-border"
@@ -229,6 +248,7 @@ const RegisterPage = () => {
                     />
                   )}
                 </motion.div>
+                {/* Pesan Error Field */}
                 <AnimatePresence>
                   {fieldErrors.nama && (
                     <motion.p
@@ -244,6 +264,7 @@ const RegisterPage = () => {
                 </AnimatePresence>
               </motion.div>
 
+              {/* INPUT EMAIL */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <label className="text-sm font-semibold text-gray-300 ml-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,6 +310,7 @@ const RegisterPage = () => {
                 </AnimatePresence>
               </motion.div>
 
+              {/* INPUT PASSWORD */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <label className="text-sm font-semibold text-gray-300 ml-1 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,6 +333,7 @@ const RegisterPage = () => {
                     } rounded-xl px-4 py-3.5 ${formData.password ? 'pr-12' : 'pr-4'} outline-none transition-all duration-300 text-white placeholder:text-gray-500 focus:bg-white/10 focus:ring-4 focus:ring-purple-500/20`}
                     placeholder="••••••••"
                   />
+                   {/* Tombol Toggle Mata (Show/Hide Password) */}
                   <AnimatePresence>
                     {formData.password && (
                       <motion.button
@@ -360,6 +383,7 @@ const RegisterPage = () => {
                 </AnimatePresence>
               </motion.div>
 
+              {/* TOMBOL SUBMIT */}
               <motion.button
                 variants={itemVariants}
                 whileHover={{ scale: 1.02, y: -2 }}
@@ -387,6 +411,7 @@ const RegisterPage = () => {
               </motion.button>
             </div>
 
+            {/* FOOTER LINK KE LOGIN */}
             <motion.div variants={itemVariants} className="mt-8 pt-6 border-t border-white/10">
               <p className="text-center text-gray-400 text-sm">
                 Sudah punya akun?{' '}
@@ -403,6 +428,7 @@ const RegisterPage = () => {
           </div>
         </motion.div>
 
+        {/* FOOTER COPYRIGHT */}
         <motion.div
           variants={itemVariants}
           className="mt-8 flex justify-center items-center gap-6 text-gray-500 text-xs"

@@ -47,9 +47,10 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
     setResponseStatus(null);
 
     try {
+      // Melakukan request ke endpoint public API
       const res = await fetch('http://localhost:3009/api/products/external/all', {
         method: 'GET',
-        headers: { 'x-api-key': testApiKey }
+        headers: { 'x-api-key': testApiKey } // Mengirim API Key di header
       });
 
       const data = await res.json();
@@ -121,11 +122,13 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
 
   return (
     <div className="space-y-6">
+      {/* HEADER SIMULATOR */}
       <div>
         <h3 className="text-white text-2xl font-black">Simulator Aplikasi Produk</h3>
         <p className="text-gray-400 text-sm">Test your API integration here</p>
       </div>
 
+      {/* INPUT API KEY & TOMBOL LOAD */}
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
         <div className="flex gap-3 mb-4">
           <div className="flex-1 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
@@ -136,7 +139,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
               type="text"
               value={testApiKey}
               onChange={(e) => setTestApiKey(e.target.value)}
-              placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxx"
+              placeholder="wm_live_xxxxxxxxxxxxxxxxxxxx"
               className="flex-1 bg-transparent text-white placeholder:text-gray-500 outline-none font-mono text-sm"
             />
           </div>
@@ -162,6 +165,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
           </motion.button>
         </div>
 
+        {/* TOGGLE LIHAT JSON MENTAH */}
         {rawResponse && (
           <div className="text-center">
             <button
@@ -176,6 +180,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
           </div>
         )}
 
+         {/* TAMPILAN JSON RESPONSE */}
         <AnimatePresence>
           {showJSON && rawResponse && (
             <motion.div
@@ -204,7 +209,8 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
           )}
         </AnimatePresence>
       </div>
-
+      
+      {/* ALERT ERROR */}
       {testError && (
         <div className="bg-red-500/20 border border-red-500/50 rounded-2xl p-4">
           <div className="flex items-start gap-3 text-red-200">
@@ -216,6 +222,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
         </div>
       )}
 
+       {/* FILTER BAR (SEARCH & CATEGORY) */}
       {loadedProducts.length > 0 && (
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -265,6 +272,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
         </div>
       )}
 
+      {/* GRID TAMPILAN PRODUK */}
       {loadedProducts.length > 0 ? (
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -279,6 +287,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
                   whileHover={{ y: -8, scale: 1.02 }}
                   className="relative bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-white/10 rounded-2xl overflow-hidden hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 transition-all cursor-pointer group"
                 >
+                   {/* Gambar Produk */}
                   {product.gambar ? (
                     <div 
                       className="relative h-48 overflow-hidden cursor-zoom-in"
@@ -317,6 +326,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
                     </div>
                   )}
                   
+                  {/* Info Produk */}
                   <div className="p-4">
                     <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">
                       {product.nama_barang}
@@ -373,6 +383,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
         </div>
       )}
 
+      {/* MODAL DETAIL PRODUK */}
       <AnimatePresence>
         {showDetailModal && selectedProduct && (
           <>
@@ -484,6 +495,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
         )}
       </AnimatePresence>
 
+      {/* MODAL ZOOM GAMBAR */}
       <AnimatePresence>
         {showZoomModal && zoomedImage && selectedProduct && (
           <>
@@ -502,7 +514,7 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
               className="fixed inset-0 z-[101] flex items-center justify-center p-4 md:p-8"
             >
               <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl max-w-7xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
-                
+                {/* Area Gambar yang di-Zoom */}
                 <div className="md:w-1/2 relative bg-black/50 flex items-center justify-center p-4 overflow-auto">
                   <div className="absolute top-4 right-4 flex gap-2 z-10">
                     <motion.button
@@ -621,16 +633,21 @@ const UserAPIExplorer = ({ apiKey, onLoadSuccess }) => {
   );
 };
 
+// ==========================================
+// KOMPONEN 2: DashboardPage
+// Fitur: Halaman utama dashboard untuk Admin dan User
+// ==========================================
 const DashboardPage = () => {
   const [user, setUser] = useState(null);
   const [apiKey, setApiKey] = useState('');
-  const [products, setProducts] = useState([]);
-  const [stats, setStats] = useState({ totalProducts: 0, totalUsers: 0, totalApiKeys: 0 });
+  const [products, setProducts] = useState([]);// Daftar produk untuk CRUD Admin
+  const [stats, setStats] = useState({ totalProducts: 0, totalUsers: 0, totalApiKeys: 0 });// Stats Admin
   const [loading, setLoading] = useState(true);
-  const [totalRequests, setTotalRequests] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);// Stats User
   const [activeKeys, setActiveKeys] = useState(0);
   const [generatingKey, setGeneratingKey] = useState(false);
 
+  // State Modal Edit Produk (Admin Only)
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
@@ -648,10 +665,13 @@ const DashboardPage = () => {
     }
   }, []);
 
+  // --- FUNGSI LOAD DATA DASHBOARD ---
+  // Menyesuaikan data yang diambil berdasarkan role (Admin/User)
   const loadDashboardData = async (currentUser) => {
     const token = localStorage.getItem('token');
     
     try {
+       // 1. DATA KHUSUS USER
       if (currentUser.role === 'user') {
         const statsRes = await fetch('http://localhost:3009/api/auth/stats', {
           headers: { Authorization: `Bearer ${token}` }
@@ -680,12 +700,14 @@ const DashboardPage = () => {
         }
       }
 
+      // 2. DATA PRODUK (Untuk CRUD Admin)
       const productsRes = await fetch('http://localhost:3009/api/products', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const productsData = await productsRes.json();
       setProducts(productsData.data || []);
 
+       // 3. DATA KHUSUS ADMIN (Stats System)
       if (currentUser.role === 'admin') {
         const usersRes = await fetch('http://localhost:3009/api/auth/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
@@ -723,6 +745,7 @@ const DashboardPage = () => {
     }
   };
 
+   // --- CRUD FUNCTIONS (ADMIN ONLY) ---
   const openEditModal = (product) => {
     setEditingProduct(product);
     setFormData({
@@ -788,6 +811,7 @@ const DashboardPage = () => {
     }
   };
 
+   // --- API KEY FUNCTIONS (USER ONLY) ---
   const copyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
     alert('API Key copied to clipboard!');
@@ -865,6 +889,7 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-28 px-4 md:px-8 pb-20">
       <div className="max-w-7xl mx-auto">
         
+         {/* HEADER WELCOME (ADMIN & USER) */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -912,6 +937,7 @@ const DashboardPage = () => {
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
           
+          {/* PANEL KIRI: KHUSUS ADMIN */}
           {user.role === 'admin' && (
             <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">
               
@@ -974,6 +1000,7 @@ const DashboardPage = () => {
             </motion.div>
           )}
 
+          {/* PANEL KIRI: KHUSUS USER */}
           {user.role === 'user' && (
             <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">
               
@@ -1091,10 +1118,12 @@ const DashboardPage = () => {
             </motion.div>
           )}
 
+          {/* PANEL KANAN: KONTEN UTAMA */}
           <motion.div
             variants={itemVariants}
             className="lg:col-span-2"
           >
+            {/* TAMPILAN ADMIN: MANAJEMEN PRODUK */}
             {user.role === 'admin' ? (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
                 <div className="flex justify-between items-center mb-6">
@@ -1135,6 +1164,7 @@ const DashboardPage = () => {
                               {product.kategori}
                             </span>
                           </div>
+                          {/* Tombol Edit & Delete (Hanya Admin) */}
                           <div className="flex gap-2 mt-3">
                             <button 
                               onClick={() => openEditModal(product)}
@@ -1176,13 +1206,15 @@ const DashboardPage = () => {
                 </motion.button>
               </div>
             ) : (
+              // TAMPILAN USER: API EXPLORER / SIMULATOR
               <UserAPIExplorer apiKey={apiKey} onLoadSuccess={handleLoadSuccess} />
             )}
           </motion.div>
 
         </motion.div>
       </div>
-
+      
+      {/* MODAL EDIT FORM (ADMIN ONLY) */}
       <AnimatePresence>
         {showEditModal && (
           <>

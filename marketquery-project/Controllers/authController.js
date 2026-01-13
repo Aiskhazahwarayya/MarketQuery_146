@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
       nama,
       email,
       password: hashedPassword,
-      role: role || 'user'
+      role: role || 'user' // Default role adalah user jika tidak ditentukan
     });
 
     const userData = {
@@ -38,6 +38,11 @@ exports.register = async (req, res) => {
       role: newUser.role
     };
 
+    /* ------------------------------------------------------------
+       PEMISAHAN REGISTER:
+       Hanya 'user' yang otomatis dibuatkan API Key 30 hari.
+       'admin' tidak memerlukan API Key untuk fitur dashboard.
+       ------------------------------------------------------------ */
     if (newUser.role === 'user') {
       const apiKey = process.env.API_KEY_PREFIX + crypto.randomBytes(16).toString('hex');
 
@@ -89,6 +94,11 @@ exports.login = async (req, res) => {
       role: user.role
     };
 
+    /* ------------------------------------------------------------
+       PEMISAHAN LOGIN:
+       Jika User: Ambil data API Key untuk ditampilkan di Dashboard User.
+       Jika Admin: Langsung lanjut tanpa mencari API Key.
+       ------------------------------------------------------------ */
     if (user.role === 'user') {
       let keyRecord = await ApiKey.findOne({
         where: { ID_User: user.ID_User },
@@ -137,6 +147,11 @@ exports.getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
     }
+
+    /* ------------------------------------------------------------
+       PEMISAHAN PROFILE (ADMIN):
+       Admin tidak punya masa berlaku key, jadi langsung kembalikan data.
+       ------------------------------------------------------------ */
     if (user.role === 'admin') {
       return res.json({
         success: true,
@@ -319,7 +334,7 @@ exports.getAllUsers = async (req, res) => {
           } else {
             userObj.status = keyRecord.status;
           }
-          // -----------------------------------------------
+          
           userObj.api_key = keyRecord.Key;
           userObj.expires_at = keyRecord.expires_at;
         } else {

@@ -3,6 +3,11 @@ const { ApiKey, User, ApiLog } = require('../models');
 
 const apiGuard = async (req, res, next) => {
 
+  /* ============================================================
+      PENCATATAN AKTIVITAS (LOGGING)
+      Bagian ini berfungsi untuk mencatat setiap request yang masuk
+      baik itu berhasil maupun gagal ke dalam database.
+     ============================================================ */
   res.on('finish', async () => {
     try {
       const userId = req.apiUser ? req.apiUser.ID_User : null;
@@ -20,6 +25,10 @@ const apiGuard = async (req, res, next) => {
   });
 
   try {
+    /* ============================================================
+        VALIDASI IDENTITAS USER (API KEY CHECK)
+        Memastikan request memiliki Key yang valid dan aktif.
+       ============================================================ */
     const apiKey = req.headers['x-api-key'];
 
     if (!apiKey) {
@@ -46,6 +55,7 @@ const apiGuard = async (req, res, next) => {
 
     if (isExpired || keyRecord.status === 'inactive') {
       
+      // Jika sudah expired tapi status masih active, otomatis ubah ke inactive
       if (isExpired && keyRecord.status === 'active') {
         await keyRecord.update({ status: 'inactive' });
       }

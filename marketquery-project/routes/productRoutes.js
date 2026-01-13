@@ -5,14 +5,11 @@ const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 const apiGuard = require('../middleware/apiGuard');
 const upload = require('../middleware/upload'); 
 
-
 router.get('/external/all', apiGuard, productController.getAllProducts);
 router.get('/external/:id', apiGuard, productController.getProductById);
 
-
 router.get('/', authenticateToken, productController.getAllProducts);
 router.get('/:id', authenticateToken, productController.getProductById);
-
 
 router.post('/', authenticateToken, isAdmin, upload.single('gambar'), productController.createProduct);
 router.put('/:id',  authenticateToken, isAdmin, upload.single('gambar'), productController.updateProduct);

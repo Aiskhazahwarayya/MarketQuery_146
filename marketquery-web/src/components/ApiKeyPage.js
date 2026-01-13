@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ApiKeyPage = () => {
+  // Mengelola data API key, status loading, notifikasi copy, visibilitas key, dan tanggal kadaluarsa
   const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [expiresAt, setExpiresAt] = useState(null);
 
+  // Menjalankan fetchApiKey satu kali saat halaman pertama kali dibuka
   useEffect(() => {
     fetchApiKey();
   }, []);
 
+   // --- FUNGSI UTAMA: GET DATA ---
+  // Mengambil profile user dari backend untuk mendapatkan API Key yang sedang aktif
   const fetchApiKey = async () => {
     setLoading(true);
     try {
@@ -30,6 +34,8 @@ const ApiKeyPage = () => {
     }
   };
 
+  // --- FUNGSI UTAMA: RESET/GENERATE KEY ---
+  // Meminta backend untuk membuat API Key baru. Key lama akan otomatis hangus.
   const handleGenerateKey = async () => {
     if (!window.confirm("Apakah kamu yakin ingin membuat API Key baru? Key lama tidak akan bisa digunakan lagi.")) {
       return;
@@ -58,17 +64,20 @@ const ApiKeyPage = () => {
     }
   };
 
+  // Menyalin teks API Key ke clipboard pengguna dan memberikan feedback visual 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(apiKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Menyensor bagian tengah API Key agar tidak terlihat penuh (contoh: abc12•••xyz9)
   const maskApiKey = (key) => {
     if (!key || key.length < 8) return key;
     return `${key.substring(0, 8)}${'•'.repeat(key.length - 12)}${key.substring(key.length - 4)}`;
   };
 
+   // Setting varian animasi untuk Framer Motion
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,6 +91,7 @@ const ApiKeyPage = () => {
     visible: { y: 0, opacity: 1 }
   };
 
+  // --- RENDER TAMPILAN ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-28 px-4 pb-20">
       <div className="max-w-5xl mx-auto">
@@ -113,6 +123,7 @@ const ApiKeyPage = () => {
           className="space-y-6"
         >
           
+           {/* KARTU UTAMA: MENAMPILKAN KEY & TOMBOL AKSI */}
           <motion.div
             variants={itemVariants}
             className="relative bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 p-8 rounded-3xl shadow-2xl overflow-hidden"
@@ -143,6 +154,7 @@ const ApiKeyPage = () => {
                   </div>
                 </div>
                 
+                {/* Tombol Toggle Show/Hide Key */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -162,6 +174,7 @@ const ApiKeyPage = () => {
                 </motion.button>
               </div>
               
+               {/* Box Tampilan Key Code */}
               <div className="bg-black/40 rounded-2xl p-6 mb-4 border border-white/20">
                 {loading ? (
                   <div className="flex items-center justify-center py-4">
@@ -178,6 +191,7 @@ const ApiKeyPage = () => {
                 )}
               </div>
 
+                {/* Tombol Copy & Generate */}
               <div className="grid grid-cols-2 gap-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -219,6 +233,7 @@ const ApiKeyPage = () => {
             </div>
           </motion.div>
 
+          {/* BAGIAN DOKUMENTASI API */}
           <motion.div
             variants={itemVariants}
             className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl"
@@ -338,6 +353,7 @@ const ApiKeyPage = () => {
             </div>
           </motion.div>
 
+          {/* BAGIAN DAFTAR RESPONSE CODE */}
           <motion.div
             variants={itemVariants}
             className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl"

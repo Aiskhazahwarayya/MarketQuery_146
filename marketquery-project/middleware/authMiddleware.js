@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
 
+/* ============================================================
+    AUTENTIKASI TOKEN (VERIFIKASI LOGIN)
+    Mengecek apakah user sudah login dan memiliki token valid.
+   ============================================================ */
 exports.authenticateToken = (req, res, next) => {
   try {
     const authHeader =
@@ -26,6 +30,10 @@ exports.authenticateToken = (req, res, next) => {
   }
 };
 
+/* ============================================================
+    OTORISASI ADMIN (LEVEL AKSES)
+    Memastikan user yang sudah login memiliki hak akses Admin.
+   ============================================================ */
 exports.isAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();

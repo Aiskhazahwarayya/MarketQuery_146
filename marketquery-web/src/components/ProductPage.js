@@ -26,6 +26,8 @@ const ProductPage = () => {
     gambar: null  
   });
 
+  // --- CEK ROLE USER ---
+  // Mengecek apakah user yang login adalah admin untuk membuka fitur CRUD
   const [imagePreview, setImagePreview] = useState(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'admin';
@@ -34,6 +36,8 @@ const ProductPage = () => {
     fetchProducts();
   }, []);
 
+  // --- API FUNCTIONS ---
+  // 1. GET: Ambil semua produk
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -49,11 +53,13 @@ const ProductPage = () => {
     }
   };
 
+  // Handler Input File Gambar & Preview
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData({ ...formData, gambar: file });
       
+      // Membuat preview gambar lokal sebelum upload
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -62,8 +68,10 @@ const ProductPage = () => {
     }
   };
 
+  // 2. POST: Tambah Produk Baru
   const handleCreate = async () => {
     try {
+      // Menggunakan FormData karena ada upload file gambar
       const formDataToSend = new FormData();
       formDataToSend.append('nama_barang', formData.nama_barang);
       formDataToSend.append('harga', formData.harga);
@@ -97,6 +105,7 @@ const ProductPage = () => {
     }
   };
 
+  // 3. PUT: Update Produk
   const handleUpdate = async () => {
     try {
       const formDataToSend = new FormData();
@@ -106,11 +115,12 @@ const ProductPage = () => {
       formDataToSend.append('kategori', formData.kategori);
       formDataToSend.append('deskripsi', formData.deskripsi);
 
+       // Logika khusus untuk gambar update
       if (formData.gambar instanceof File) {
         formDataToSend.append('gambar', formData.gambar);
       } 
       else if (formData.gambar === null) {
-        formDataToSend.append('delete_image', 'true');
+        formDataToSend.append('delete_image', 'true');// Flag untuk hapus gambar lama
       }
 
       const res = await fetch(`http://localhost:3009/api/products/${editingProduct.ID_Product}`, {
@@ -135,6 +145,7 @@ const ProductPage = () => {
     }
   };
 
+  // 4. DELETE: Hapus Produk
   const handleDelete = async (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     
@@ -155,6 +166,8 @@ const ProductPage = () => {
     }
   };
 
+  // --- MODAL HANDLERS ---
+  // Buka Modal Create
   const openCreateModal = () => {
     setModalMode('create');
     setFormData({ 
@@ -169,6 +182,7 @@ const ProductPage = () => {
     setShowModal(true);
   };
 
+  // Buka Modal Edit (Isi form dengan data lama)
   const openEditModal = (product) => {
     setModalMode('edit');
     setEditingProduct(product);
@@ -202,6 +216,7 @@ const ProductPage = () => {
     setImagePreview(null);
   };
 
+   // Handle tombol Submit di Modal
   const handleSubmit = () => {
     if (!formData.nama_barang || !formData.harga || !formData.stok || !formData.kategori) {
       alert('Please fill all required fields!');
@@ -214,14 +229,17 @@ const ProductPage = () => {
     }
   };
 
+  // Membuat list kategori unik dari data produk
   const categories = ['All', ...new Set(products.map(p => p.kategori))];
 
+  // Logika Filter (Search + Kategori)
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.nama_barang.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || product.kategori === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+   // Helper URL Gambar
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     
@@ -229,6 +247,7 @@ const ProductPage = () => {
         return `http://localhost:3009/uploads/${imagePath}`;
   };
 
+  // --- ZOOM & DETAIL MODAL HANDLERS ---
   const openZoomModal = (product) => {
     setSelectedProduct(product);
     setZoomedImage(getImageUrl(product.gambar));
@@ -255,6 +274,7 @@ const ProductPage = () => {
     setZoomLevel(1);
   };
 
+   // --- ANIMATION CONFIG ---
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -294,6 +314,7 @@ const ProductPage = () => {
           </p>
         </motion.div>
 
+        {/* TOOLBAR: SEARCH, FILTER, BUTTON ADD */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -302,6 +323,7 @@ const ProductPage = () => {
         >
           <div className="flex flex-col md:flex-row gap-4">
             
+            {/* Search Bar */}
             <div className="flex-1 relative">
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -315,6 +337,7 @@ const ProductPage = () => {
               />
             </div>
 
+            {/* TOMBOL ADD PRODUCT (HANYA ADMIN) */}
             {isAdmin && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -329,6 +352,7 @@ const ProductPage = () => {
               </motion.button>
             )}
 
+            {/* Toggle View Mode (Grid/List) */}
             <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -355,6 +379,7 @@ const ProductPage = () => {
             </div>
           </div>
 
+           {/* Kategori Filter Pills */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
             {categories.map((category, index) => (
               <motion.button
@@ -378,6 +403,7 @@ const ProductPage = () => {
           </div>
         </motion.div>
 
+        {/* LOADING STATE */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <motion.div
@@ -408,6 +434,7 @@ const ProductPage = () => {
               </motion.div>
             ) : (
               <>
+              {/* TAMPILAN GRID VIEW */}
                 {viewMode === 'grid' && (
                   <motion.div
                     key="grid"
@@ -425,6 +452,7 @@ const ProductPage = () => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/10 group-hover:to-pink-600/10 transition-all duration-300" />
                         
+                        {/* Gambar Produk */}
                         {product.gambar ? (
                           <div 
                             className="relative h-48 overflow-hidden cursor-zoom-in"
@@ -467,6 +495,7 @@ const ProductPage = () => {
                           </div>
                         )}
                         
+                        {/* Detail Produk di Card */}
                         <div className="relative z-10 p-6">
                           <h3 className="text-white font-bold text-xl mb-2 group-hover:text-purple-300 transition-colors line-clamp-1">
                             {product.nama_barang}
@@ -494,6 +523,8 @@ const ProductPage = () => {
                                 Stock: <span className="text-white font-bold">{product.stok}</span>
                               </span>
                             </div>
+
+                            {/* TOMBOL EDIT/DELETE (HANYA ADMIN) */}
                             {isAdmin && (
                               <div className="flex gap-1">
                                 <motion.button
@@ -527,6 +558,7 @@ const ProductPage = () => {
                   </motion.div>
                 )}
 
+                {/* TAMPILAN LIST VIEW */}
                 {viewMode === 'list' && (
                   <motion.div
                     key="list"
@@ -586,6 +618,8 @@ const ProductPage = () => {
                               </span>
                             </div>
                           </div>
+
+                          {/* TOMBOL EDIT/DELETE LIST VIEW (HANYA ADMIN) */}
                           {isAdmin && (
                             <div className="flex gap-2 flex-shrink-0">
                               <motion.button
@@ -617,6 +651,7 @@ const ProductPage = () => {
         )}
       </div>
 
+      {/* MODAL FORM (CREATE / EDIT) */}
       <AnimatePresence>
         {showModal && (
           <>
@@ -659,6 +694,7 @@ const ProductPage = () => {
                 </div>
 
                 <div className="space-y-4">
+                  {/* Form Input Fields */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
                       Product Name <span className="text-red-400">*</span>
@@ -785,6 +821,7 @@ const ProductPage = () => {
         )}
       </AnimatePresence>
 
+       {/* MODAL DETAIL / ZOOM GAMBAR */}
       <AnimatePresence>
         {showZoomModal && zoomedImage && selectedProduct && (
           <>
@@ -804,6 +841,7 @@ const ProductPage = () => {
             >
               <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl max-w-7xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row">
                 
+                {/* Area Gambar dengan Zoom */}
                 <div className="md:w-1/2 relative bg-black/50 flex items-center justify-center p-4 overflow-auto">
                   <div className="absolute top-4 right-4 flex gap-2 z-10">
                     <motion.button
@@ -919,6 +957,7 @@ const ProductPage = () => {
                       </div>
                     </div>
 
+                    {/* ACTION BUTTONS DI DETAIL MODAL (HANYA ADMIN) */}
                     {isAdmin && (
                       <div className="flex gap-3 pt-4 border-t border-white/10">
                         <motion.button

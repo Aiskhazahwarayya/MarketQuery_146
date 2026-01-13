@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
+  // Menyimpan ringkasan statistik untuk ditampilkan di kartu atas
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalApiKeys: 0,
@@ -15,10 +16,12 @@ const UserManagementPage = () => {
     loadUsersData();
   }, []);
 
+  // --- API FUNCTION: LOAD USERS ---
   const loadUsersData = async () => {
     const token = localStorage.getItem('token');
     
     try {
+      // Fetch semua user dari endpoint admin
       const response = await fetch('http://localhost:3009/api/auth/admin/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -27,10 +30,11 @@ const UserManagementPage = () => {
       if (data.success) {
         setUsers(data.data || []);
         
+        // --- LOGIKA PERHITUNGAN STATISTIK ---
         const total = data.data.length;
         const withKeys = data.data.filter(u => u.api_key).length;
         
-        // PERBAIKAN: Hitung berdasarkan kolom status yang dikirim Backend
+        // Menghitung status berdasarkan kolom 'status' dari database ('active' atau 'inactive')
         const activeKeysCount = data.data.filter(u => u.api_key && u.status === 'active').length;
         const inactiveKeysCount = data.data.filter(u => u.api_key && u.status === 'inactive').length;
         
@@ -48,6 +52,7 @@ const UserManagementPage = () => {
     }
   };
 
+  // --- API FUNCTION: DELETE USER ---
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Yakin ingin menghapus user ini?')) return;
     
@@ -62,7 +67,7 @@ const UserManagementPage = () => {
       
       if (data.success) {
         alert('User berhasil dihapus!');
-        loadUsersData();
+        loadUsersData();// Refresh data setelah menghapus
       } else {
         alert(data.message || 'Gagal menghapus user!');
       }
@@ -72,11 +77,13 @@ const UserManagementPage = () => {
     }
   };
 
+  // --- UTILITY FUNCTION ---
   const copyApiKey = (apiKey) => {
     navigator.clipboard.writeText(apiKey);
     alert('API Key copied!');
   };
 
+  // --- LOADING STATE VIEW ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -93,6 +100,7 @@ const UserManagementPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-28 px-4 md:px-8 pb-20">
       <div className="max-w-7xl mx-auto">
         
+         {/* HEADER JUDUL */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -113,8 +121,10 @@ const UserManagementPage = () => {
           </p>
         </motion.div>
 
+        {/* KARTU STATISTIK (4 GRID) */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           
+          {/* Card 1: Total User */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -135,6 +145,7 @@ const UserManagementPage = () => {
             </div>
           </motion.div>
 
+           {/* Card 2: Total API Keys */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,6 +166,7 @@ const UserManagementPage = () => {
             </div>
           </motion.div>
 
+          {/* Card 3: Active Keys */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -175,6 +187,7 @@ const UserManagementPage = () => {
             </div>
           </motion.div>
 
+          {/* Card 4: Inactive Keys */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -197,6 +210,7 @@ const UserManagementPage = () => {
 
         </div>
 
+        {/* TABEL LIST USER */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -212,6 +226,7 @@ const UserManagementPage = () => {
             <h3 className="text-white text-2xl font-black">Daftar Users & API Keys</h3>
           </div>
 
+          {/* Header Tabel (Desktop Only) */}
           <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-xl mb-3">
             <div className="col-span-1 text-purple-300 text-xs uppercase tracking-wider font-bold">ID</div>
             <div className="col-span-2 text-purple-300 text-xs uppercase tracking-wider font-bold">Nama</div>
@@ -232,21 +247,25 @@ const UserManagementPage = () => {
                     transition={{ delay: index * 0.05 }}
                     className="grid grid-cols-1 md:grid-cols-12 gap-4 px-4 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
                   >
+                     {/* ID User */}
                     <div className="md:col-span-1 flex md:block items-center gap-2">
                       <span className="md:hidden text-gray-400 text-xs font-semibold">ID:</span>
                       <span className="text-white font-bold">{user.ID_User}</span>
                     </div>
 
+                     {/* Nama User */}
                     <div className="md:col-span-2 flex md:block items-center gap-2">
                       <span className="md:hidden text-gray-400 text-xs font-semibold">Nama:</span>
                       <span className="text-white font-medium">{user.nama || 'N/A'}</span>
                     </div>
 
+                    {/* Email User */}
                     <div className="md:col-span-3 flex md:block items-center gap-2">
                       <span className="md:hidden text-gray-400 text-xs font-semibold">Email:</span>
                       <span className="text-gray-300 text-sm">{user.email}</span>
                     </div>
 
+                    {/* API Key (Sensor + Copy) */}
                     <div className="md:col-span-3 flex md:block items-center gap-2">
                       <span className="md:hidden text-gray-400 text-xs font-semibold">API Key:</span>
                       {user.api_key ? (
@@ -268,6 +287,7 @@ const UserManagementPage = () => {
                       )}
                     </div>
 
+                    {/* Status Badge */}
                     <div className="md:col-span-1 flex md:justify-center items-center gap-2">
                       <span className="md:hidden text-gray-400 text-xs font-semibold">Status:</span>
                       {user.api_key ? (
@@ -288,6 +308,7 @@ const UserManagementPage = () => {
                       )}
                     </div>
 
+                    {/* Action Button (Delete) */}
                     <div className="md:col-span-2 flex md:justify-center items-center gap-2">
                       <motion.button
                         whileHover={{ scale: 1.05 }}

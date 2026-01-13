@@ -4,18 +4,21 @@ const { Op } = require('sequelize');
 const fs = require('fs');   
 const path = require('path'); 
 
+/* ==============================
+      AMBIL SEMUA DATA (GET ALL)
+================================== */
 exports.getAllProducts = async (req, res) => {
   try {
     const { search, sortBy = 'nama_barang', order = 'ASC' } = req.query;
     let whereClause = {};
 
+    //Fitur Pencarian
     if (search) {
       whereClause[Op.or] = [
         { nama_barang: { [Op.like]: `%${search}%` } },
         { kategori: { [Op.like]: `%${search}%` } }
       ];
     }
-
 
     const validSortColumns = ['nama_barang', 'harga', 'stok', 'kategori'];
     const actualSortBy = validSortColumns.includes(sortBy) ? sortBy : 'nama_barang';
@@ -45,6 +48,10 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+/* ==========================
+AMBIL DETAIL (GET BY ID)
+============================ */
+
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,14 +79,21 @@ exports.getProductById = async (req, res) => {
   }
 };
 
+
+/* ==========================================
+   BUAT PRODUK BARU (CREATE)
+   Menyimpan data teks & file gambar ke MySQL
+========================================== */
 exports.createProduct = async (req, res) => {
   try {
+    // Validasi input dari Express Validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { nama_barang, harga, kategori, deskripsi, stok } = req.body;
+    // Mengambil nama file yang diupload 
     const gambar = req.file ? req.file.filename : null; 
     const product = await Product.create({ 
       nama_barang, 
@@ -106,6 +120,10 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+/* ==========================================
+   UPDATE DATA (UPDATE)
+   Mengubah data & mengelola pembersihan gambar
+========================================== */
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -118,6 +136,7 @@ exports.updateProduct = async (req, res) => {
 
     let gambarData = product.gambar;
 
+    //Jika upload baru, hapus gambar lama agar tidak menumpuk di server
     if (req.file) {
       if (product.gambar) {
         const oldPath = path.join(__dirname, '../uploads', product.gambar);
@@ -125,6 +144,8 @@ exports.updateProduct = async (req, res) => {
       }
       gambarData = req.file.filename;
     } 
+
+    //Jika admin memilih hapus gambar tanpa ganti yang baru
     else if (delete_image === 'true') {
       if (product.gambar) {
         const oldPath = path.join(__dirname, '../uploads', product.gambar);
@@ -158,6 +179,11 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+
+/* ==========================================
+   HAPUS PRODUK (DELETE)
+   Hapus baris database & hapus file fisiknya
+========================================== */
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
